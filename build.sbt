@@ -21,3 +21,5 @@ libraryDependencies ++= Seq(
   "org.webjars" % "jquery" % "2.1.1",
   "org.webjars" % "angularjs" % "1.3.2"
 )
+
+WebKeys.directWebModules in Assets += "signalj"
