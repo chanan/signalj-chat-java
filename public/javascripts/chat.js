@@ -3,7 +3,6 @@ $(function() {
 
     $('#chat').hide();
     $('#alert').hide();
-    $.connection.hub.logging = true;
     var hub = $.connection.chatHub;
 
     hub.client.sendMessage = function(username, message) {

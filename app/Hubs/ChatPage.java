@@ -1,6 +1,5 @@
-package Hubs;
+package hubs;
 
-import java.util.List;
 import java.util.Set;
 
 public interface ChatPage{

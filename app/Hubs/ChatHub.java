@@ -1,4 +1,4 @@
-package Hubs;
+package hubs;
 
 import play.Logger;
 import signalJ.services.Hub;
