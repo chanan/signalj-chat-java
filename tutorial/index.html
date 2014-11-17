@@ -7,7 +7,7 @@
 <body>
     <div>
         <h2>SignalJ Overview</h2>
-        <p>SignalJ is a port of <a href="http://asp.net/signalr" target="_blank">ASP.Net SignalR</a> to PlayFramework and Akka. SignalJ provides an abstraction for client-server and server-client
+        <p>SignalJ is a port of <a href="http://asp.net/signalr">ASP.Net SignalR</a> to PlayFramework and Akka. SignalJ provides an abstraction for client-server and server-client
         message based communication. The client is usually a browser. In that case, the communication mechanism is chosen automatically based on the browser's capabilities: Websockets, ServerSentEvents, and
         Ajax Longpolling. For older versions of IE, SignalR provides ForeverFrames but that features has not been ported to SignalJ yet. Other clients for SignalR exist as well, such as: iOS, Andriod, and
         .net framework. This allows the same server code to be easily used by both browsers and native clients. In this tutorial we will be dealing with javascript/browser clients.</p>
@@ -57,7 +57,7 @@ libraryDependencies ++= Seq(
         </code></pre>
         <p>The next two step are <em>optional</em>. First, if you wish to use the ServerSentEvents or AJAX LongPolling transports you will need to extend your
         <a href="#code/app/Global.java">Global</a> from SignalJ's Global (<code>signalJ.SignalJGlobal</code>). (Note: in the event you cannot do so, there are other options. Please see the documentation at
-        <a href="http://signalj.io" target="_blank">the SignalJ website</a>). If you plan to only support Websockets, this step is not needed.</p>
+        <a href="http://signalj.io">the SignalJ website</a>). If you plan to only support Websockets, this step is not needed.</p>
         <p>The second optional step is only required if want to load the SignalR's JQuery plugin (and therefore SignalJ's) from inside the the plugin itself. This options & benefits of different ways of loading
         the JQuery plugin are discussed in the next step of the tutorial (Client Side Setup). However, if you do chose to use this option then two changes need to be made. First, you will need to include sbt-web version 1.1
         or above in your <a href="#code/project/plugins.sbt">plugins.sbt</a>: </p>
@@ -73,7 +73,7 @@ WebKeys.directWebModules in Assets += "signalj"
     <div>
         <h2>Client Side Setup</h2>
         <p>Three script files are needed for SignalJ to work: JQuery, SignalR's JQuery plugin, and SignalJ's hubs javascript file.</p>
-        <p>First, include JQuery in your project. Use JQuery 1.x if you plan to support older browsers. In this example, I included JQuery 2 via <a href="http://webjars.org" target="_blank">Webjars</a>.
+        <p>First, include JQuery in your project. Use JQuery 1.x if you plan to support older browsers. In this example, I included JQuery 2 via <a href="http://webjars.org">Webjars</a>.
         This can be found in <a href="#code/app/views/main.scala.html">/app/views/main.scala.html</a>: </p>
         <code><pre>
 &lt;script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("jquery.min.js"))'&gt;&lt;/script&gt;
@@ -138,7 +138,7 @@ public class ChatHub extends Hub&lt;ChatPage&gt; {
     <div>
         <h2>Hub Methods</h2>
         <p>Any public method can be called from a client. The methods are called asynchronously inside of an actor. Each time a hub method is invoked, a new instance of the hub is created. The hub class can
-        be supplied by your dependency injection framework. For more information on this check out the documentation at the <a href="http://signalj.io" target="_blank">SignalJ website</a>.</p>
+        be supplied by your dependency injection framework. For more information on this check out the documentation at the <a href="http://signalj.io">SignalJ website</a>.</p>
         <p>Hub methods can be void or return a value. For example, a method that adds two numbers can be written in two ways that differ in the way they are handled on the client (more on that topic
         in the client section):</p>
         <pre><code>
@@ -369,7 +369,7 @@ public class ChatHub extends Hub&lt;ChatPage&gt; {
                 This will update the map between connectionIds and usernames</li>
             <li><code>return true;</code> - If everything was successful, the server returns true to the client</li>
         </ol>
-        <p>On the <a href="#code/tutorial/index.html">client</a> this method is called like so:</p>
+        <p>On the <a href="#code/public/javascripts/chat.js">client</a> this method is called like so:</p>
         <pre><code>
 $('#loginSubmit').click(function(event) {
     event.preventDefault();
@@ -386,6 +386,43 @@ $('#loginSubmit').click(function(event) {
 });
         </code></pre>
         <p>In the code above, we see that when the login method is code and is successful, the chat page is shown, if not an alert error is shown.</p>
+    </div>
+    <div>
+        <h2>Chat - More examples</h2>
+        <p>Lets look at how easy it is to actually send chat messages between the client -&gt; server -&gt; other in the room.
+        In <a href="#code/public/javascripts/chat.js">/public/javascripts/chat.js</a> we send the room name and message to the server:</p>
+        <pre><code>
+var sendMessage = function() {
+    hub.server.sendMessage($('#roomselect').val(), $("#talk").val());
+    ...
+};
+        </code></pre>
+        <p>In <a href="#code/app/hubs/ChatHub.java">/app/hubs/ChatHub</a> we see that the message is received by the server and
+        sent to everyone else in the room. We get the username we saved in <code>callerState</code> in the login method:</p>
+        <pre><code>
+public void sendMessage(String room, String message) {
+    clients().othersInGroup(room).sendMessage(clients().callerState.get("username"), message);
+}
+        </code></pre>
+        <p>Finally, back in <a href="#code/public/javascripts/chat.js">/public/javascripts/chat.js</a> we catch the <code>sendMessage</code> event:</p>
+<pre><code>
+hub.client.sendMessage = function(username, message) {
+    var el = $('&lt;div class="message"&gt;&lt;span&gt;&lt;/span&gt;&lt;p&gt;&lt;/p&gt;&lt;/div&gt;');
+    $("span", el).text(username + ': ');
+    $("p", el).text(message);
+    $(el).addClass("talk");
+    $('#messages').append(el);
+};
+</code></pre>
+    </div>
+    <div>
+        <h2>Advanced Topics</h2>
+    </div>
+    <div>
+        <h2>Future Enhancements</h2>
+    </div>
+    <div>
+        <h2>Learn More</h2>
     </div>
 </body>
 </html>
