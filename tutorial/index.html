@@ -74,20 +74,35 @@ WebKeys.directWebModules in Assets += "signalj"
         <h2>Client Side Setup</h2>
         <p>Three script files are needed for SignalJ to work: JQuery, SignalR's JQuery plugin, and SignalJ's hubs javascript file.</p>
         <p>First, include JQuery in your project. Use JQuery 1.x if you plan to support older browsers. In this example, I included JQuery 2 via <a href="http://webjars.org" target="_blank">Webjars</a>.
-        This can be found in <a href="#code/app/views/main.scala.html">/app/views/main.scala.html</a>: <code><pre>&lt;script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("jquery.min.js"))'&gt;&lt;/script&gt;</pre></code>.
-        </p>
+        This can be found in <a href="#code/app/views/main.scala.html">/app/views/main.scala.html</a>: </p>
+        <code><pre>
+&lt;script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("jquery.min.js"))'&gt;&lt;/script&gt;
+        </pre></code>
         <p>Next you will need to include SignalR's JQuery plugin. There are 3 main options for this step:</p>
         <ol>
-            <li>You can use a CDN to include either the un-minified version: <code><pre>&lt;script src="//ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.1.0.js"&gt;&lt;/script&gt;</pre></code> or the minified version:
-            <code><pre>&lt;script src="//ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.1.0.min.js"&gt;&lt;/script&gt;</pre></code></li>
+            <li>You can use a CDN to include either the un-minified version:
+            <code><pre>
+&lt;script src="//ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.1.0.js"&gt;&lt;/script&gt;
+            </pre></code> or the minified version:
+            <code><pre>
+&lt;script src="//ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.1.0.min.js"&gt;&lt;/script&gt;<
+            </pre></code></li>
             <li>You can download the plugins from the links above and save them in your project and then added them to your page</li>
             <li>Or, you can link to the /signalj/jquery.signalR.js route inside of the SignalJ plugin. The benefit of this option is that it will use the un-minified version of the file in development mode and the
             minified version in production mode. The draw back of this is that changes to plugins.sbt and build.sbt must be made as specified in the "Server Side Setup" step of this tutorial outlined</li>
         </ol>
-        <p>In this tutorial, I used option 3 as can be seen in <a href="#code/app/views/main.scala.html">/app/views/main.scala.html</a>: <code><pre>&lt;script src="/signalj/jquery.signalR.js"&gt;&lt;/script&gt;</pre></code>.</p>
-        <p>Lastly, you must include the auto-generated hub script: <code><pre>&lt;script type="text/javascript" charset="utf-8" src="/signalj/hubs.js"&gt;&lt;/script&gt;</pre></code></p>
-        <p>After those 3 script files are included, you application specifc script files would be included, in this example:
-        <code><pre>&lt;script type="text/javascript" charset="utf-8" src="@routes.Assets.at("javascripts/chat.js")"&gt;&lt;/script&gt;</pre></code>.</p>
+        <p>In this tutorial, I used the third option as can be seen in <a href="#code/app/views/main.scala.html">/app/views/main.scala.html</a>: </p>
+<code><pre>
+&lt;script src="/signalj/jquery.signalR.js"&gt;&lt;/script&gt;
+</pre></code>
+        <p>Lastly, you must include the auto-generated hub script:</p>
+        <code><pre>
+&lt;script type="text/javascript" charset="utf-8" src="/signalj/hubs.js"&gt;&lt;/script&gt;
+        </pre></code>
+        <p>After those 3 script files are included, you application specifc script files would be included, in this example:</p>
+        <code><pre>
+&lt;script type="text/javascript" charset="utf-8" src="@routes.Assets.at("javascripts/chat.js")"&gt;&lt;/script&gt;
+        </pre></code>
     </div>
     <div>
         <h2>Writing Your First Hub Class</h2>
@@ -184,6 +199,27 @@ hub.client.addResult = function(result) {
         </ul>
     </div>
     <div>
+        <h2>Server Side Events</h2>
+        <p>You can respond to client connects, disconnects or reconnects if you wish. for example: </p>
+        <pre><code>
+@Override
+public void onDisconnected() {
+    Logger.debug("Disconnect: " + context().connectionId);
+}
+        </code></pre>
+        <p>The three events are:</p>
+        <ul>
+            <li><code>public void onConnected()</code> - Called when a client connects</li>
+            <li><code>public void onReconnected()</code> - Called when a client reconnects</li>
+            <li><code>public void onDisconnected()</code> - Called when a client disconnects</li>
+        </ul>
+        <p>Two things to note:</p>
+        <ol>
+            <li>While, usually a disconnect method occurs, obviously in the case of server shutdown the method will not fire</li>
+            <li>callerState will not be available in Server Side Events</li>
+        </ol>
+    </div>
+    <div>
         <h2>Client Side - Connecting to a hub</h2>
         <p>To connect to a hub, you must first connect to a hub and then start the transport. For example:</p>
         <pre><code>
@@ -204,7 +240,152 @@ $.connection.hub.start().done(function ({ transport: 'serverSentEvents' }){
 });
         </code></pre>
         <p><strong>Note:</strong> To use transports other than Websockets, you must enable them in your Global. Please see the section on "Server Side Setup".</p>
-        <p>Lastly, a promise is reedemed when a connection is made. you can also install a <code>fail</code> function to catch the event of a connection not being able to be established.</p>
+        <p>Lastly, a promise is redeemed when a connection is made. you can also install a <code>fail</code> function to catch the event of a connection not being able to be established.</p>
+        <p><strong>Tip:</strong> You can turn on client side logging like so:</p>
+        <pre><code>
+$.connection.hub.logging = true;
+        </code></pre>
+    </div>
+    <div>
+        <h2>Client Side - Calling Server Methods</h2>
+        <p>There are two basic basic functions to be developed on the client: server side calls and client side events. Lets look at server side method calls first.
+        Below is an example of calling a function with expecting a return value and no parameters:</p>
+<pre><code>
+var hub = $.connection.someHub;
+$.connection.hub.start().done(function() {
+    hub.server.myMethod();
+});
+</code></pre>
+        <p>A server side method can also accept parameters:</p>
+<pre><code>
+var hub = $.connection.someHub;
+$.connection.hub.start().done(function() {
+    hub.server.myMethod(arg1, arg2, ..., argN);
+});
+</code></pre>
+        <p>A server side method can also return a value from a function as seen in the "Hub Methods" section:</p>
+<pre><code>
+var hub = $.connection.someHub;
+$.connection.hub.start().done(function() {
+    hub.server.myMethod().done(function(result) {
+        //Do something with the result
+    });
+});
+</code></pre>
+        <p>You can also catch server side failures like so:</p>
+<pre><code>
+var hub = $.connection.someHub;
+$.connection.hub.start().done(function() {
+    hub.server.myMethod().fail(function(error) {
+        console.log(error);
+    });
+});
+</code></pre>
+    </div>
+    <div>
+        <h2>Client Side - Reacting to Server Side Messages</h2>
+        <p>When one of the functions in the <code>clients()</code> is called on the server, it will fire a javascript function on the client. These are handled
+        by assigning a function to to a named properties on <code>hub.client</code>.</p>
+        <p>For example, assuming an interface like the following:</p>
+<pre><code>
+public interface MyPage {
+    public void method1();
+    public void method2(String arg1);
+    public void method3(Person person);
+}
+</code></pre>
+        <p>Using the example above, the hub class might call one of those functions like so:</p>
+<pre><code>
+clients().all.method3(new Person("John", "Smith));
+</code></pre>
+        <p>So, the javascript could look like so:</p>
+<pre><code>
+var hub = $.connection.someHub;
+hub.client.method1() = function() {
+    console.log('method1 was called');
+};
+
+hub.client.method2 = function(arg) {
+    console.log('method2 was called with the parameter: ' + arg);
+);
+
+hub.client.method3 = function(person) {
+    console.log('method3 is called with this name: ' + person.firstName);
+};
+</code></pre>
+<p>Any object that can be serialized to Json including lists and arrays, can be sent to the client.</p>
+    </div>
+    <div>
+        <h2>The ChatPage Interface</h2>
+        <p>Now that we have gone through a tour of SignalJ's features, lets go about building our chat application. First, lets create some method
+        definition in the interface <a href="#code/app/hubs/ChatPage.java">ChatPage</a></p>
+<pre><code>
+public interface ChatPage {
+    public void userJoined(String username);
+    public void sendMessage(String username, String message);
+    public void userList(Set&lt;String&gt; users);
+    public void userLeftRoom(String username);
+    public void userJoinedRoom(String username);
+    public void roomList(Set&lt;String&gt; rooms);
+}
+</code></pre>
+    </div>
+    <div>
+        <h2>The Hub Class</h2>
+        <p>First lets define the needed skeleton in <a href="#code/app/hubs/ChatHub.java">/apps/hubs/ChatHub.java</a>:</p>
+        <pre><code>
+public class ChatHub extends Hub&lt;ChatPage&gt; {
+
+    @Override
+    protected Class&lt;ChatPage&gt; getInterface() {
+        return ChatPage.class;
+    }
+}
+        </code></pre>
+        <p>Lets create our first server side code, a (fake) login method:</p>
+<pre><code>
+1. public boolean login(String username) {
+2.    if(connectionsToUsernames.containsValue(username)) return false;
+3.     clients().callerState.put("username", username);
+4.     joinRoom("Lobby");
+5.     clients().caller.roomList(getRoomList());
+6.     connectionsToUsernames.putIfAbsent(context().connectionId, clients().callerState.get("username"));
+7.     return true;
+8. }
+</code></pre>
+        <p>Much of the code in this method deals with the different chat rooms. Lets break it down by lines:</p>
+        <ol>
+            <li><code>public boolean login(String username) {</code> - This (very fake) fake login method returns true
+                if successful, false if the user already exists</li>
+            <li><code>if(connectionsToUsernames.containsValue(username)) return false;</code> - A static map mapping connectionIds
+                to usernames is checked for duplicates. If a duplicate is found the method returns with a false</li>
+            <li><code>clients().callerState.put("username", username);</code> - Saving the username in the callerState map
+                will make it available to subsequent calls</li>
+            <li><code>joinRoom("Lobby");</code> - This private method will join the user to the default room named "Lobby". Ultimately,
+                this will call: <code>groups().add(context().connectionId, room);</code></li>
+            <li><code>clients().caller.roomList(getRoomList());</code> - This will call the originating browser only with the
+                list of rooms</li>
+            <li><code>connectionsToUsernames.putIfAbsent(context().connectionId, clients().callerState.get("username"));</code> -
+                This will update the map between connectionIds and usernames</li>
+            <li><code>return true;</code> - If everything was successful, the server returns true to the client</li>
+        </ol>
+        <p>On the <a href="#code/tutorial/index.html">client</a> this method is called like so:</p>
+        <pre><code>
+$('#loginSubmit').click(function(event) {
+    event.preventDefault();
+    hub.server.login($('#inputUsername').val()).done(function(result) {
+        if(result) {
+            $('#login').hide();
+            $('#chat').show();
+            $('#inputUsername').val('');
+            $('#alert').hide();
+        } else {
+            $('#alert').show();
+        }
+    });
+});
+        </code></pre>
+        <p>In the code above, we see that when the login method is code and is successful, the chat page is shown, if not an alert error is shown.</p>
     </div>
 </body>
 </html>

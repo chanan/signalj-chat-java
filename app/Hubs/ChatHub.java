@@ -14,8 +14,6 @@ public class ChatHub extends Hub<ChatPage> {
         clients().callerState.put("username", username);
         joinRoom("Lobby");
         clients().caller.roomList(getRoomList());
-        clients().othersInGroup("Lobby").userJoined(username);
-        clients().caller.userList(getUserList("Lobby"));
         connectionsToUsernames.putIfAbsent(context().connectionId, clients().callerState.get("username"));
         return true;
     }
