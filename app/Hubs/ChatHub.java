@@ -1,16 +1,23 @@
 package hubs;
 
+import actors.Robot;
+import akka.actor.ActorRef;
+import akka.actor.Props;
 import play.Logger;
+import play.libs.Akka;
+import scala.concurrent.duration.Duration;
 import signalJ.services.Hub;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class ChatHub extends Hub<ChatPage> {
     private final static Map<String, Set<String>> users = new HashMap<>();
     private final static Map<UUID, String> connectionsToUsernames = new HashMap<>();
+    private static ActorRef robot;
 
     public boolean login(String username) {
-        if(connectionsToUsernames.containsValue(username)) return false;
+        if(connectionsToUsernames.containsValue(username) || username.equals("Robot")) return false;
         clients().callerState.put("username", username);
         joinRoom("Lobby");
         clients().caller.roomList(getRoomList());
@@ -72,11 +79,13 @@ public class ChatHub extends Hub<ChatPage> {
     }
 
     private Set<String> getUserList(String room) {
-        return new HashSet<String>(users.get(room));
+        final Set<String> userlist = new HashSet<>(users.get(room));
+        userlist.add("Robot");
+        return userlist;
     }
 
     private Set<String> getRoomList() {
-        return new HashSet<String>(users.keySet());
+        return new HashSet<>(users.keySet());
     }
 
     @Override
@@ -89,5 +98,20 @@ public class ChatHub extends Hub<ChatPage> {
         final String username = connectionsToUsernames.remove(context().connectionId);
         Logger.debug("Disconnect: " + username);
         removeUserFromRoom(username);
+    }
+
+    @Override
+    public void onConnected() {
+        if(robot == null) {
+            robot = Akka.system().actorOf(Props.create(Robot.class), "robot");
+            Akka.system().scheduler().schedule(
+                    Duration.create(5, TimeUnit.SECONDS),
+                    Duration.create(30, TimeUnit.SECONDS),
+                    robot,
+                    "tick",
+                    Akka.system().dispatcher(),
+                    ActorRef.noSender()
+            );
+        }
     }
 }

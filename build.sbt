@@ -18,8 +18,7 @@ libraryDependencies ++= Seq(
   "signalJ" %% "signalj" % "0.5.0-SNAPSHOT",
   "org.webjars" %% "webjars-play" % "2.3.0-2",
   "org.webjars" % "bootstrap" % "3.3.1",
-  "org.webjars" % "jquery" % "2.1.1",
-  "org.webjars" % "angularjs" % "1.3.2"
+  "org.webjars" % "jquery" % "2.1.1"
 )
 
 WebKeys.directWebModules in Assets += "signalj"

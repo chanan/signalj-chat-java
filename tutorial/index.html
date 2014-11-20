@@ -22,9 +22,11 @@ hub.client.userJoined = myClientFunction(param) {
     console.log("Param: " + param);
 };
         </code></pre>
-        <p>Lastly, SignalR (and therefore SignalJ) handles gracefully, client side connection problems. It can reconnect if disconnected. Handle slow connections, letting you handle an event to notify the
+        <p>Lastly, SignalR (and therefore SignalJ) gracefully handles, client side connection problems. It can reconnect if disconnected. Handle slow connections, letting you handle an event to notify the
         user if you wish, and negotiate transports as mentioned above.</p>
         <p>Although, SignalJ is not a chat server, the example most used is building one, so in the next sections of the tutorial we will see how we can build a chat server with a login screen and rooms.</p>
+        <p><strong>Note:</strong> Some parts of the code are for demo purposes only. For example, the login method. Another example is saving
+        state as a static variable in the Hub class. This is not thread safe. A better solution would be to call a database or to a "singleton" actor.</p>
     </div>
     <div>
         <h2>Server Side Setup</h2>
@@ -345,7 +347,7 @@ public class ChatHub extends Hub&lt;ChatPage&gt; {
         <p>Lets create our first server side code, a (fake) login method:</p>
 <pre><code>
 1. public boolean login(String username) {
-2.    if(connectionsToUsernames.containsValue(username)) return false;
+2.    if(connectionsToUsernames.containsValue(username) || username.equals("Robot")) return false;
 3.     clients().callerState.put("username", username);
 4.     joinRoom("Lobby");
 5.     clients().caller.roomList(getRoomList());
@@ -416,13 +418,35 @@ hub.client.sendMessage = function(username, message) {
 </code></pre>
     </div>
     <div>
+        <h2>Calling into the hub from outside</h2>
+        <p>Sometimes you may want to call clients connected to a hub from another class or manage its group. To do that you can get an
+        instance of the hub from the <code>GlobalHost</code>. From the returned instance you can call the <code>clients()</code> or <code>groups()</code> methods
+        but not <code>context()</code>. In the Chat tutorial we create a <a href="#code/app/actors/Robot.java">Robot</a> that sends a message
+        to all rooms every 30 seconds:</p>
+<pre><code>
+HubContext&lt;ChatPage&gt; hub = GlobalHost.getHub(ChatHub.class);
+hub.clients().all.sendMessage("Robot", "I am alive!");
+</code></pre>
+        <p>On the first line, we see how to get a reference to a hub class (HubContext&lt;T&gt;). In the next line we see reference to
+        the HubContext can be used similarly to writing code inside the Hub.</p>
+    </div>
+    <div>
         <h2>Advanced Topics</h2>
+        <p>You can learn about some other advanced topics at the <a href="http://signalj.io">SignalJ</a> website. Some of these topics are:</p>
+        <ul>
+            <li>Using your own dependency injection - Hub classes can be created via a IOC framework such as Guice or Spring</li>
+            <li>Configuration</li>
+            <li>Client side life time events</li>
+        </ul>
     </div>
     <div>
         <h2>Future Enhancements</h2>
-    </div>
-    <div>
-        <h2>Learn More</h2>
+        <p>Future releases of SignalJ will continue to attempt to achieve feature parity with SignalR.</p>
+        <ul>
+            <li>Forever Frames Transport - Mainly to support older versions of IE</li>
+            <li>Clustering - Clustering in SignalR is complex, however because SignalJ is based on Akka, SignalJ will use Akka's clustering.</li>
+            <li>Pluggable Authentication - The base for this work is included in 0.5.0 but will need some more rework to integrate with security projects such as SecureSocial or Deadbolt</li>
+        </ul>
     </div>
 </body>
 </html>

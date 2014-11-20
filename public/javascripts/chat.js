@@ -85,14 +85,18 @@ $(function() {
         $('#roomselect').change(function () {
             var optionSelected = $(this).find("option:selected");
             var room = optionSelected.text();
-            hub.server.joinRoom(room);
+            hub.server.joinRoom(room).done(function() {
+                changedRoom(room);
+            });
         });
 
         $('#create').click(function(event) {
             event.preventDefault();
-            hub.server.createRoom($('#roomname').val());
-            changeRoom = $('#roomname').val();
-            $('#roomname').val('');
+            hub.server.createRoom($('#roomname').val()).done(function() {
+                changeRoom = $('#roomname').val();
+                changedRoom(changeRoom);
+                $('#roomname').val('');
+            });
         });
 
         var sendMessage = function() {
@@ -104,6 +108,14 @@ $(function() {
             $(el).addClass('me');
             $('#messages').append(el);
             $("#talk").val('');
+        };
+
+        var changedRoom = function(room) {
+            var el = $('<div class="message"><span></span><p></p></div>');
+            $("span", el).text("You");
+            $("p", el).text("have joined room " + room);
+            $(el).addClass("join");
+            $('#messages').append(el);
         };
 
         var handleReturnKey = function(e) {
