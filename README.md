@@ -1,4 +1,4 @@
-This is your new Play application
-=================================
+SignalJ Java Chat Activator Tutorial
+===================================
 
-This file will be packaged with your application, when using `activator dist`.
+Please see the [SignalJ](http://signalj.io) website
