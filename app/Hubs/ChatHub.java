@@ -66,7 +66,7 @@ public class ChatHub extends Hub<ChatPage> {
                 room = key;
                 clients().othersInGroup(key).userLeftRoom(username);
                 clients().othersInGroup(key).userList(getUserList(key));
-                if(users.get(key).size() == 0) removekey = key;
+                if(users.get(key).size() == 0 && !key.equalsIgnoreCase("Lobby")) removekey = key;
                 break;
             }
         }

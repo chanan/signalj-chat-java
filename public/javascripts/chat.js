@@ -70,7 +70,6 @@ $(function() {
         $('#loginSubmit').click(function(event) {
             event.preventDefault();
             hub.server.login($('#inputUsername').val()).done(function(result) {
-                console.log("result: %O", result);
                 if(result) {
                     $('#login').hide();
                     $('#chat').show();
@@ -92,8 +91,8 @@ $(function() {
 
         $('#create').click(function(event) {
             event.preventDefault();
+            changeRoom = $('#roomname').val();
             hub.server.createRoom($('#roomname').val()).done(function() {
-                changeRoom = $('#roomname').val();
                 changedRoom(changeRoom);
                 $('#roomname').val('');
             });

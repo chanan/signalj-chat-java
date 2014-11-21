@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   javaEbean,
   cache,
   javaWs,
-  "signalJ" %% "signalj" % "0.5.0-SNAPSHOT",
+  "signalJ" %% "signalj" % "0.5.0",
   "org.webjars" %% "webjars-play" % "2.3.0-2",
   "org.webjars" % "bootstrap" % "3.3.1",
   "org.webjars" % "jquery" % "2.1.1"
